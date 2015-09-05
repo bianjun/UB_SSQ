@@ -5,7 +5,7 @@ class SsqSqlite3Db:
         self.dbfile = ssqdq
         self.dbconn = sqlite3.connect(ssqdq)
         self.dbcur = self.dbconn.cursor()
-        self.CreateSsqTable()
+        #self.CreateSsqTable()
 
     def close(self):
         self.dbconn.commit()
@@ -19,6 +19,7 @@ class SsqSqlite3Db:
         try:
             self.dbcur.execute("CREATE TABLE lottery_ssq ("
                   "ssqid VARCHAR(7) PRIMARY KEY, "
+                  "ssqdt VARCHAR(10), "
                   "ssqrb0 INTEGER, ssqrb1 INTEGER, ssqrb2 INTEGER, "
                   "ssqrb3 INTEGER, ssqrb4 INTEGER, ssqrb5 INTEGER, "
                   "ssqbb INTEGER)")
@@ -29,10 +30,14 @@ class SsqSqlite3Db:
             else:
                 print(dbExpInfo)
 
+    def GetTableNames(self):
+        self.dbcur.execute("PRAGMA table_info(lottery_ssq)")  
+        return self.dbcur.fetchall()
+
     def InsertSingleHistoryRecordToSsqTable(self, historyRecord):
         try:
             hisBalls = historyRecord.replace(' ', ',')
-            sql = "INSERT INTO lottery_ssq(ssqid, ssqrb0, ssqrb1, ssqrb2, ssqrb3, ssqrb4, ssqrb5, ssqbb) VALUES("\
+            sql = "INSERT INTO lottery_ssq(ssqid, ssqdt, ssqrb0, ssqrb1, ssqrb2, ssqrb3, ssqrb4, ssqrb5, ssqbb) VALUES("\
                   + hisBalls + ")"
             self.dbcur.execute(sql)
         except sqlite3.IntegrityError as dbExpInfo:
@@ -71,6 +76,11 @@ class SsqSqlite3Db:
 
         for record in dbRecord:
             print(record)
+
+    def FoundLatestSsq(self):
+        sql = 'select max(ssqid) from lottery_ssq'
+        dbRecord = self.dbcur.execute(sql).fetchall()
+        return dbRecord
 
     #规则表基本操作
     def GetRulesName_c(self, table):
@@ -157,7 +167,7 @@ class SsqSqlite3Db:
         sql = 'SELECT * FROM blueball_rule ORDER BY bb_id LIMIT {limit}'.format(limit=num)
         return self.dbcur.execute(sql).fetchall()
 
-testDb = SsqSqlite3Db()
+#testDb = SsqSqlite3Db()
 #testDb.InsertSingleHistoryRecordToSsqTable('2012047 06 07 11 16 32 33 11')
 #testDb.WriteLotteryFromFileToDb(r'F:/python_code/Allball.txt')
 #testDb.ShowLotteryDb()
@@ -169,8 +179,8 @@ testDb = SsqSqlite3Db()
 #blueball = testDb.GetBlueBall(16)
 #print(len(blueball), blueball)
 
-allRecord = testDb.GetAllRecord(10)
-print(allRecord)
+#allRecord = testDb.GetAllRecord(10)
+#print(allRecord)
 #print(len(allRecord), allRecord[0][2:])
 
 #testDb.CreateSsqRuleTable()
@@ -189,4 +199,4 @@ print(allRecord)
 #print(testDb.GetBlueBallAllRule(6, 'ocur_times'))
 #print(testDb.GetBlueBallRules())
 
-testDb.close()
+#testDb.close()

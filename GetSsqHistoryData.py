@@ -21,6 +21,8 @@ def ParseSsqHistoryDataFromLecaiCom(history_data_page):
     matchRecord = {'periodNumPat':None, 'datePat':None, 'redBallPat':None, 'blueBallPat':None}
 
     lattery = []
+    
+    #这里有个大缓存，大小一万多，待优化
     historyList = history_data_page.splitlines()
     
     for line in historyList:
@@ -76,8 +78,8 @@ def ParseSsqHistoryDataFromLecaiCom(history_data_page):
                 print('有错误发生：蓝球已经解析({blueBallPat})时，期号({periodNumPat})、日期({datePat})、红球({redBallPat})或没匹配！'.format(**matchState))
                 break
     
-the_page = GetSsqHistoryDataFromLecaiCom('2003-1-1','2005-12-31')
-for num, ball in enumerate(ParseSsqHistoryDataFromLecaiCom(the_page),1):
-	print(ball)
+#the_page = GetSsqHistoryDataFromLecaiCom('2003-1-1','2005-12-31')
+#for num, ball in enumerate(ParseSsqHistoryDataFromLecaiCom(the_page),1):
+#    print(ball)
 
-print('Total = %d'%num)
+#print('Total = %d'%num)
