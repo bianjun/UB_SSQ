@@ -1,10 +1,12 @@
 import os
 from datetime import date,timedelta
 import time
+import copy
 import GetSsqHistoryData as gsd
 import Cls_SsqSqlite3Db
 #import CommFunc as cf
-
+
+
 class SsqDbController:
     def __init__(self):
         self.ssqDb = None
@@ -21,7 +23,7 @@ class SsqDbController:
             else:
                 print('SsqTable created successfully!')
 
-    def UpdateDb(self):
+    def CalUpdateTimeInterVals(self):
         """获取当前最新的数据，并根据当前日期更新最新的数据到数据库"""
         latestSsq = self.ssqDb.FoundLatestSsq()
         begindate = date(2003, 1, 1)
@@ -40,13 +42,40 @@ class SsqDbController:
                 print('数据库数据已经是最新！')
                 return
             else:
-                updateEndDate = begindate
+                #updateEndDate = begindate
                 while deltaDays.days > 0:
                     updateDays = 365 if deltaDays.days >= 365 else deltaDays.days
-                    updateEndDate = updateEndDate + timedelta(updateDays)
+                    updateEndDate = begindate + timedelta(updateDays)
                     deltaDays = today - updateEndDate
-                    print(updateEndDate)
-                    #for ssqdata in gsd.GetSsqHistoryDataFromLecaiCom(begindate, updateEndDate):
+                    yield begindate, updateEndDate
+                    begindate = updateEndDate + timedelta(1)
+
+    def UpdateDb(self):
+        for begindate, updateEndDate in self.CalUpdateTimeInterVals():
+            print('开始抓取从{begin}到{end}的数据...'.format(begin = begindate, end = updateEndDate))
+            ssqList = []
+            iend = 10
+            the_page = gsd.GetSsqHistoryDataFromLecaiCom(begindate, updateEndDate)
+            
+            for ssqdata in gsd.ParseSsqHistoryDataFromLecaiCom(the_page):
+                ssqList.insert(0, copy.deepcopy(ssqdata))
+                #if iend < 0:
+                #    break
+                #iend -= 1
+                #print(ssqdata)
+            if ssqdata != None:
+                print('抓取成功，抓到%d组数据！'%len(ssqList))
+            else:
+                print('抓取失败！')
+
+            iend = 10
+            for data in ssqList:
+                if iend < 0:
+                    break
+                iend -= 1
+                print(data)
+                
+        #for ssqdata in gsd.GetSsqHistoryDataFromLecaiCom(begindate, updateEndDate):
                 
     def CloseSsqDb(self):
         self.ssqDb.close()

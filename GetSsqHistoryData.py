@@ -6,6 +6,7 @@ def GetSsqHistoryDataFromLecaiCom(startDate, endDate):
     """从乐彩网获取历史数据，起止日期格式：yyyy-mm-dd"""
     """现在不考虑：日期合法性，起止日期范围约束等"""
     url = r'http://www.lecai.com/lottery/draw/list/50/?type=range_date&start={START}&end={END}'.format(START = startDate, END = endDate)
+    print(url)
     response = urllib.request.urlopen(url)
     the_page = response.read()
     return the_page.decode("utf-8")
@@ -67,7 +68,12 @@ def ParseSsqHistoryDataFromLecaiCom(history_data_page):
                     #print(line)
                 else:
                     print('解析到蓝球时有错误发生：连续匹配到红球({redBallPat})或在没有匹配期号({periodNumPat})或没有匹配日期({datePat})或没有匹配红球({redBallPat})的情况下匹配到了蓝球'.format(**matchState))
-                    break
+                    if any(matchState.values()):
+                        print('终止抓取')
+                        break
+                    else:
+                        print('本次错误忽略')
+                        continue
                 
         if matchState['blueBallPat']:
             if all(matchState.values()):
@@ -76,9 +82,10 @@ def ParseSsqHistoryDataFromLecaiCom(history_data_page):
                     matchState[key] = False
             else:
                 print('有错误发生：蓝球已经解析({blueBallPat})时，期号({periodNumPat})、日期({datePat})、红球({redBallPat})或没匹配！'.format(**matchState))
+                yield None
                 break
     
-#the_page = GetSsqHistoryDataFromLecaiCom('2003-1-1','2005-12-31')
+#the_page = GetSsqHistoryDataFromLecaiCom('2014-01-09','2015-01-09')
 #for num, ball in enumerate(ParseSsqHistoryDataFromLecaiCom(the_page),1):
 #    print(ball)
 
