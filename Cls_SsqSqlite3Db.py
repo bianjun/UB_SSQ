@@ -79,7 +79,7 @@ class SsqSqlite3Db:
             print(record)
 
     def FoundLatestSsq(self):
-        sql = 'select max(ssqid) from lottery_ssq'
+        sql = 'select max(ssqid),ssqdt from lottery_ssq'
         dbRecord = self.dbcur.execute(sql).fetchall()
         return dbRecord
 

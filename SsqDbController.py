@@ -1,5 +1,5 @@
 import os
-from datetime import date,timedelta
+from datetime import date,timedelta,datetime
 import time
 import copy
 import GetSsqHistoryData as gsd
@@ -26,29 +26,35 @@ class SsqDbController:
     def CalUpdateTimeInterVals(self):
         """获取当前最新的数据，并根据当前日期更新最新的数据到数据库"""
         latestSsq = self.ssqDb.FoundLatestSsq()
-        begindate = date(2003, 1, 1)
+        
         #print(latestSsq)
         today = date.today()
         if [(None,)] != latestSsq:
-            print(latestSsq)
+            begindate = datetime.strptime(latestSsq[0][1], "%Y-%m-%d")
+            print('数据库最新数据日期：', begindate)
+            begindate += timedelta(1)
+            begindate = date(begindate.year, begindate.month, begindate.day)
+            print('从{begindate}开始抓！'.format(begindate = begindate))
         else:
             print('双色球基本表还没有数据，从2003年1月1日开始更新数据库，更新到今天:', str(today))
-            deltaDays = today - begindate
-            if deltaDays.days < 0:
-                print('今天比数据库最新时间还早，请确认系统时间是否正确？')
-                #这里后面需要抛出异常
-                return
-            elif deltaDays == 0:
-                print('数据库数据已经是最新！')
-                return
-            else:
-                #updateEndDate = begindate
-                while deltaDays.days > 0:
-                    updateDays = 365 if deltaDays.days >= 365 else deltaDays.days
-                    updateEndDate = begindate + timedelta(updateDays)
-                    deltaDays = today - updateEndDate
-                    yield begindate, updateEndDate
-                    begindate = updateEndDate + timedelta(1)
+            begindate = date(2003, 1, 1)
+            
+        deltaDays = today - begindate
+        if deltaDays.days < 0:
+            print('今天比数据库最新时间还早，请确认系统时间是否正确？')
+            #这里后面需要抛出异常
+            return
+        elif deltaDays == 0:
+            print('数据库数据已经是最新！')
+            return
+        else:
+            #updateEndDate = begindate
+            while deltaDays.days > 0:
+                updateDays = 365 if deltaDays.days >= 365 else deltaDays.days
+                updateEndDate = begindate + timedelta(updateDays)
+                deltaDays = today - updateEndDate
+                yield begindate, updateEndDate
+                begindate = updateEndDate + timedelta(1)
 
     def UpdateDb(self):
         for begindate, updateEndDate in self.CalUpdateTimeInterVals():
