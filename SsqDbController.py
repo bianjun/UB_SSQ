@@ -14,7 +14,7 @@ class SsqDbController:
     def OpenSsqDb(self):
         """如果基本信息表不存在则创建，有则打开"""
         self.ssqDb = Cls_SsqSqlite3Db.SsqSqlite3Db()
-        ssqDbTableInfoList = [(0, 'ssqid', 'VARCHAR(7)', 0, None, 1), (1, 'ssqdt', 'VARCHAR(10)', 0, None, 0), (2, 'ssqrb0', 'INTEGER', 0, None, 0), (3, 'ssqrb1', 'INTEGER', 0, None, 0), (4, 'ssqrb2', 'INTEGER', 0, None, 0), (5, 'ssqrb3', 'INTEGER', 0, None, 0), (6, 'ssqrb4', 'INTEGER', 0, None, 0), (7, 'ssqrb5', 'INTEGER', 0, None, 0), (8, 'ssqbb', 'INTEGER', 0, None, 0)]
+        ssqDbTableInfoList = [(0, 'ssqid', 'VARCHAR(7)', 0, None, 1), (1, 'ssqdt', 'DATE', 0, None, 0), (2, 'ssqrb0', 'INTEGER', 0, None, 0), (3, 'ssqrb1', 'INTEGER', 0, None, 0), (4, 'ssqrb2', 'INTEGER', 0, None, 0), (5, 'ssqrb3', 'INTEGER', 0, None, 0), (6, 'ssqrb4', 'INTEGER', 0, None, 0), (7, 'ssqrb5', 'INTEGER', 0, None, 0), (8, 'ssqbb', 'INTEGER', 0, None, 0)]
         if ssqDbTableInfoList != self.ssqDb.GetTableNames():
             self.ssqDb.CreateSsqTable()
             print('SsqTable is not created, create it now!')
@@ -59,23 +59,21 @@ class SsqDbController:
             
             for ssqdata in gsd.ParseSsqHistoryDataFromLecaiCom(the_page):
                 ssqList.insert(0, copy.deepcopy(ssqdata))
-                #if iend < 0:
-                #    break
-                #iend -= 1
-                #print(ssqdata)
             if ssqdata != None:
                 print('抓取成功，抓到%d组数据！'%len(ssqList))
             else:
                 print('抓取失败！')
 
-            iend = 10
-            for data in ssqList:
-                if iend < 0:
-                    break
-                iend -= 1
-                print(data)
-                
-        #for ssqdata in gsd.GetSsqHistoryDataFromLecaiCom(begindate, updateEndDate):
+            #iend = 10
+            #for data in ssqList:
+                #if iend < 0:
+                #    break
+                #iend -= 1
+                #print(data)
+            print('将数据写入数据库：')
+            for num, ball in enumerate(ssqList, 1):
+                self.ssqDb.InsertSingleHistoryRecordToSsqTable("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], ssqdt = ball['datePat'], readballs = " ".join(ball['redBallPat']), blueball = ball['blueBallPat']))              
+            print('成功写入%d条记录！'%num)
                 
     def CloseSsqDb(self):
         self.ssqDb.close()

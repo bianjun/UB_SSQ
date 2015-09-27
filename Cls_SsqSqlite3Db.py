@@ -19,7 +19,7 @@ class SsqSqlite3Db:
         try:
             self.dbcur.execute("CREATE TABLE lottery_ssq ("
                   "ssqid VARCHAR(7) PRIMARY KEY, "
-                  "ssqdt VARCHAR(10), "
+                  "ssqdt DATE, "
                   "ssqrb0 INTEGER, ssqrb1 INTEGER, ssqrb2 INTEGER, "
                   "ssqrb3 INTEGER, ssqrb4 INTEGER, ssqrb5 INTEGER, "
                   "ssqbb INTEGER)")
@@ -39,6 +39,7 @@ class SsqSqlite3Db:
             hisBalls = historyRecord.replace(' ', ',')
             sql = "INSERT INTO lottery_ssq(ssqid, ssqdt, ssqrb0, ssqrb1, ssqrb2, ssqrb3, ssqrb4, ssqrb5, ssqbb) VALUES("\
                   + hisBalls + ")"
+            #print(sql)
             self.dbcur.execute(sql)
         except sqlite3.IntegrityError as dbExpInfo:
             self.dbconn.rollback()
@@ -200,3 +201,11 @@ class SsqSqlite3Db:
 #print(testDb.GetBlueBallRules())
 
 #testDb.close()
+
+if __name__ == '__main__':
+    testDb = SsqSqlite3Db()
+    testDb.CreateSsqTable()
+    ball = {'redBallPat': ('01', '07', '20', '24', '25', '33'), 'periodNumPat': '2015015', 'datePat': '2015-02-03', 'blueBallPat': '04'}
+    testDb.InsertSingleHistoryRecordToSsqTable("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], ssqdt = ball['datePat'], readballs = " ".join(ball['redBallPat']), blueball = ball['blueBallPat']))
+    print(testDb.GetAllRecord(10))
+    testDb.close()
