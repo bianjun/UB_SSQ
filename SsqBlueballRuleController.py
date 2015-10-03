@@ -62,10 +62,56 @@ class SsqBbrOccurTimes(SsqBbrController):
     def GetRuleData(self):
         return self.db.ExecuteSql('select * from blueball_rule')
 
+class SsqBbrOccurInternal(SsqBbrController):
+    def __init__(self):
+        super().__init__('occur_internal', 'VARCHAR')
+
+    def UpdateRuleData(self):
+        print("更新蓝球出现间隔...")
+        get_occ_record = self.db.ExecuteSql('SELECT ssqbb from lottery_ssq')
+        internal_rlt = [0 for x in range(1, 17, 1)]
+        internal_rlt_times = [{} for x in range(1, 17, 1)]
+        for data in get_occ_record:
+            for bno in range(1, 17, 1):
+                if bno != data[0]:
+                    if 0 != internal_rlt[bno-1]:
+                        internal_rlt[bno-1] += 1
+                else:
+                    if 0 != internal_rlt[bno-1]:
+                        internal_rlt_times[bno-1][internal_rlt[bno-1]] = internal_rlt_times[bno-1].get(internal_rlt[bno-1], 0) + 1
+                        #print(str(internal_rlt_times[bno-1]))
+                        try:
+                            update_sql = "UPDATE blueball_rule SET occur_internal = '{value}' WHERE bb_id = {bb_id}".format(bb_id = bno, \
+                                                                                                                    rule = self.rule_name,
+                                                                                                                    value = str(internal_rlt_times[bno-1]))
+                            #print(update_sql)
+                            self.db.ExecuteSql(update_sql)
+                        except sqlite3.IntegrityError:
+                            print("更新间隔失败！", error)
+                            self.CloseRule()
+                            exit(-1)
+                        except sqlite3.OperationalError as error:
+                            print("更新间隔失败！", error)
+                            self.CloseRule()
+                            exit(-1)
+                    internal_rlt[bno-1] = 1
+
+        #print(internal_rlt_times)
+        print("蓝球出现间隔更新完成")
+
+    def GetRuleData(self):
+        return self.db.ExecuteSql('select bb_id,{row_name} from blueball_rule'.format(row_name = self.rule_name))
+
 if __name__ == '__main__':
-    bbr = SsqBbrOccurTimes()
+    #bbr = SsqBbrOccurTimes()
+    #bbr.UpdateRule()
+    #bbd = bbr.GetRuleData()
+    #for data in bbd:
+    #    print(data)
+    #bbr.CloseRule()
+
+    bbr = SsqBbrOccurInternal()
     bbr.UpdateRule()
-    bbd = bbr.GetRuleData()
-    for data in bbd:
+    for data in bbr.GetRuleData():
         print(data)
     bbr.CloseRule()
