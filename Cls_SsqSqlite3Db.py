@@ -70,13 +70,17 @@ class SsqSqlite3Db:
         dbRecord = self.dbcur.execute(sql).fetchall()
         return dbRecord
 
-    def ShowLotteryDb(self):
-        sql = 'select rowid, * from lottery_ssq'
+    def ShowLotteryDb(self, num = -1):
+        sql = 'select rowid, * from lottery_ssq limit {limit}'.format(limit = num)
         dbRecord = self.dbcur.execute(sql).fetchall()
         #print(dbRecord)
 
         for record in dbRecord:
             print(record)
+
+    def ExecuteSql(self, sql):
+        dbRecord = self.dbcur.execute(sql).fetchall()
+        return dbRecord
 
     def FoundLatestSsq(self):
         sql = 'select max(ssqid),ssqdt from lottery_ssq'
@@ -204,8 +208,8 @@ class SsqSqlite3Db:
 
 if __name__ == '__main__':
     testDb = SsqSqlite3Db()
-    testDb.CreateSsqTable()
-    ball = {'redBallPat': ('01', '07', '20', '24', '25', '33'), 'periodNumPat': '2015015', 'datePat': '2015-02-03', 'blueBallPat': '04'}
-    testDb.InsertSingleHistoryRecordToSsqTable("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], ssqdt = ball['datePat'], readballs = " ".join(ball['redBallPat']), blueball = ball['blueBallPat']))
-    print(testDb.GetAllRecord(10))
+    #testDb.CreateSsqTable()
+    #ball = {'redBallPat': ('01', '07', '20', '24', '25', '33'), 'periodNumPat': '2015015', 'datePat': '2015-02-03', 'blueBallPat': '04'}
+    #testDb.InsertSingleHistoryRecordToSsqTable("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], ssqdt = ball['datePat'], readballs = " ".join(ball['redBallPat']), blueball = ball['blueBallPat']))
+    #print(testDb.GetAllRecord(10))
     testDb.close()
