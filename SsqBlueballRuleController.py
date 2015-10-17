@@ -47,11 +47,15 @@ class SsqBbrOccurTimes(SsqBbrController):
                 self.db.ExecuteSql(update_sql)
                 print("蓝球{bno}共出现了{occ}次!".format(bno = bbNo, occ = get_occ_record[0][0]))
             except sqlite3.IntegrityError:
+                get_sql = 'SELECT occur_times from blueball_rule where bb_id = {bb_id}'.format(bb_id = bbNo)
+                old_value = self.db.ExecuteSql(get_sql)
+                if old_value[0][0] == get_occ_record[0][0]:
+                    continue
+                
                 print("已经存在数据，进行数据刷新...")
                 update_sql = 'UPDATE blueball_rule SET occur_times = {value} WHERE bb_id = {bb_id}'.format(bb_id = bbNo, \
-                                                                                                        rule = self.rule_name,
                                                                                                         value = get_occ_record[0][0])
-                print("蓝球{bno}出现次数刷新为{occ}!".format(bno = bbNo, occ = get_occ_record[0][0]))
+                print("蓝球{bno}出现次数由{old_occ}刷新为{occ}!".format(bno = bbNo, old_occ = old_value[0][0], occ = get_occ_record[0][0]))
                 self.db.ExecuteSql(update_sql)
             except:
                 self.CloseRule()
@@ -102,16 +106,25 @@ class SsqBbrOccurInternal(SsqBbrController):
     def GetRuleData(self):
         return self.db.ExecuteSql('select bb_id,{row_name} from blueball_rule'.format(row_name = self.rule_name))
 
+def RuleDataUpdate(rule):
+    rule.UpdateRule()
+    rule.CloseRule()
+
 if __name__ == '__main__':
-    #bbr = SsqBbrOccurTimes()
-    #bbr.UpdateRule()
+    """bbr = SsqBbrOccurTimes()
+    bbr.UpdateRule()
     #bbd = bbr.GetRuleData()
     #for data in bbd:
     #    print(data)
-    #bbr.CloseRule()
+    bbr.CloseRule()
 
     bbr = SsqBbrOccurInternal()
     bbr.UpdateRule()
-    for data in bbr.GetRuleData():
-        print(data)
-    bbr.CloseRule()
+    #for data in bbr.GetRuleData():
+        #print(data)
+    bbr.CloseRule()"""
+
+    bbr_occt = SsqBbrOccurTimes()
+    bbr_occint = SsqBbrOccurInternal()
+    RuleDataUpdate(bbr_occt)
+    RuleDataUpdate(bbr_occint)

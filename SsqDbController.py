@@ -10,6 +10,7 @@ import Cls_SsqSqlite3Db
 class SsqDbController:
     def __init__(self):
         self.ssqDb = None
+        self.isupdate = False
         
     def OpenSsqDb(self):
         """如果基本信息表不存在则创建，有则打开"""
@@ -35,6 +36,7 @@ class SsqDbController:
             begindate += timedelta(1)
             begindate = date(begindate.year, begindate.month, begindate.day)
             print('从{begindate}开始抓！'.format(begindate = begindate))
+            self.isupdate = True
         else:
             print('双色球基本表还没有数据，从2003年1月1日开始更新数据库，更新到今天:', str(today))
             begindate = date(2003, 1, 1)
@@ -70,15 +72,21 @@ class SsqDbController:
             else:
                 print('抓取失败！')
 
-            #iend = 10
-            #for data in ssqList:
-                #if iend < 0:
-                #    break
-                #iend -= 1
-                #print(data)
+            if self.isupdate:
+                print('获取到的新数据如下：')
+                for ball in ssqList:
+                    #print(ball)
+                    print("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], \
+                                                                            ssqdt = ball['datePat'], \
+                                                                            readballs = " ".join(ball['redBallPat']), \
+                                                                            blueball = ball['blueBallPat']))
+                
             print('将数据写入数据库：')
             for num, ball in enumerate(ssqList, 1):
-                self.ssqDb.InsertSingleHistoryRecordToSsqTable("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], ssqdt = ball['datePat'], readballs = " ".join(ball['redBallPat']), blueball = ball['blueBallPat']))              
+                self.ssqDb.InsertSingleHistoryRecordToSsqTable("{ssqid} '{ssqdt}' {readballs} {blueball}".format(ssqid = ball['periodNumPat'], \
+                                                                                                                 ssqdt = ball['datePat'], \
+                                                                                                                 readballs = " ".join(ball['redBallPat']), \
+                                                                                                                 blueball = ball['blueBallPat']))              
             print('成功写入%d条记录！'%num)
                 
     def CloseSsqDb(self):
@@ -91,8 +99,8 @@ class SsqDbController:
 #    print(ball)
 
 #print('Total = %d'%num)
-
-dbcr = SsqDbController()
-dbcr.OpenSsqDb()
-dbcr.UpdateDb()
-dbcr.CloseSsqDb()
+if __name__ == '__main__':
+    dbcr = SsqDbController()
+    dbcr.OpenSsqDb()
+    dbcr.UpdateDb()
+    dbcr.CloseSsqDb()
