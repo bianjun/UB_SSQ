@@ -1,4 +1,5 @@
 import sqlite3
+import collections
 from abc import ABCMeta,abstractmethod
 import Cls_SsqSqlite3Db as cls_ssq
 
@@ -106,6 +107,53 @@ class SsqBbrOccurInternal(SsqBbrController):
     def GetRuleData(self):
         return self.db.ExecuteSql('select bb_id,{row_name} from blueball_rule'.format(row_name = self.rule_name))
 
+class SsqBbrFollowThere(SsqBbrController):
+    def __init__(self):
+        super().__init__('follow_there', 'VARCHAR')
+
+    def UpdateRuleData(self):
+        print("更新某个蓝球出现后接下来出现的三个蓝球...")
+        get_occ_record = self.db.ExecuteSql('SELECT ssqbb from lottery_ssq')
+
+        #follow_there_list = [[-1, collections.defaultdict(list), collections.defaultdict(list), collections.defaultdict(list)] for x in range(1, 17, 1)]
+        follow_there_list = [[-1, {}, {}, {}] for x in range(1, 17, 1)]
+
+        for data in get_occ_record:
+            for i in range(0, 16, 1):
+                follow_id = follow_there_list[i][0]
+                if follow_id != -1:
+                    follow_there_list[i][follow_id][data[0]] = follow_there_list[i][follow_id].get(data[0], 0) + 1
+                    follow_id += 1
+                    follow_there_list[i][0] += 1
+                    if 4 == follow_id:
+                        follow_id = -1
+                        follow_there_list[i][0] = -1
+                if data[0] == i + 1:
+                    follow_there_list[i][0] = 1
+                    #print(i, follow_there_list[i][0])
+
+        for num, follow in enumerate(follow_there_list, 1):
+            if {} != follow[1]:
+                try:
+                    value = "{}, {}, {}".format(follow[1], follow[2], follow[3])
+                    update_sql = "UPDATE blueball_rule SET {rule} = '{value}' WHERE bb_id = {bb_id}".format(bb_id = num, \
+                                                                                                            rule = self.rule_name,
+                                                                                                            value = value)
+                    #print(update_sql)
+                    self.db.ExecuteSql(update_sql)
+                except sqlite3.IntegrityError:
+                    print("更新后三次出现失败！", error)
+                    self.CloseRule()
+                    exit(-1)
+                except sqlite3.OperationalError as error:
+                    print("更新后三次出现失败！", error)
+                    self.CloseRule()
+                    exit(-1)
+        print('后三次出现更新完毕')
+        
+    def GetRuleData(self):
+        return self.db.ExecuteSql('select bb_id,{row_name} from blueball_rule'.format(row_name = self.rule_name))
+
 def RuleDataUpdate(rule):
     rule.UpdateRule()
     rule.CloseRule()
@@ -124,7 +172,10 @@ if __name__ == '__main__':
         #print(data)
     bbr.CloseRule()"""
 
-    bbr_occt = SsqBbrOccurTimes()
-    bbr_occint = SsqBbrOccurInternal()
-    RuleDataUpdate(bbr_occt)
-    RuleDataUpdate(bbr_occint)
+    #bbr_occt = SsqBbrOccurTimes()
+    #bbr_occint = SsqBbrOccurInternal()
+    #RuleDataUpdate(bbr_occt)
+    #RuleDataUpdate(bbr_occint)
+    RuleDataUpdate(SsqBbrOccurTimes())
+    RuleDataUpdate(SsqBbrOccurInternal())
+    RuleDataUpdate(SsqBbrFollowThere())
