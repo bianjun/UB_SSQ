@@ -1,5 +1,7 @@
 import sqlite3
 import heapq
+import matplotlib.pyplot as plt
+import numpy as sp
 import Cls_SsqSqlite3Db as cls_ssq
 import SsqBlueballRuleController as bbrc
 
@@ -34,6 +36,37 @@ def WhichBlueBallIsTheBestInHistory():
     
     ssq_db.close()
 
+def SpeBlueBallFit(blue_ball_no):
+    ssq_db = cls_ssq.SsqSqlite3Db()
+    fit_data_after_spe_bb = ssq_db.ExecuteSql('select rowid, ssqbb from lottery_ssq where '\
+                                       'rowid in (select rowid + 1 from lottery_ssq where ssqbb = {bb_no})'.format(bb_no = blue_ball_no))
+    #print(fit_data_after_spe_bb)
+    x = [x[0] for x in fit_data_after_spe_bb]
+    #x = [1 for x in fit_data_after_spe_bb]
+    y = [y[1] for y in fit_data_after_spe_bb]
+
+    plt.rcParams['font.sans-serif'] = ['SimHei'] #指定默认字体  
+    plt.rcParams['axes.unicode_minus'] = False #解决保存图像是负号'-'显示为方块的问题
+
+    plt.scatter(x, y)
+    plt.title(u'蓝号：{} 下一次双色球的拟化曲线'.format(blue_ball_no))
+    plt.xlabel(u'期数')
+    plt.ylabel(u'蓝号')
+    plt.autoscale(tight=True)
+    plt.grid()
+    
+
+    fp1, residuals, rank, sv, rcond = sp.polyfit(x, y, 40, full=True)
+    #print(fp1)
+    f1 = sp.poly1d(fp1)
+    print(f1(1867))
+    fx = sp.linspace(x[0], x[-1])
+    plt.plot(fx, f1(fx), linewidth = 1)
+    plt.legend(["d = %i" % f1.order], loc = 'upper left')
+
+    plt.show()
+
 if __name__ == '__main__':
-    WhichBlueBallIsTheBestInHistory()
+    #WhichBlueBallIsTheBestInHistory()
+    SpeBlueBallFit(12)
     
