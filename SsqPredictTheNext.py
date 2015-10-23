@@ -59,7 +59,7 @@ def SpeBlueBallFit(blue_ball_no):
     fp1, residuals, rank, sv, rcond = sp.polyfit(x, y, 40, full=True)
     #print(fp1)
     f1 = sp.poly1d(fp1)
-    print(f1(1867))
+    print(f1(1868))
     fx = sp.linspace(x[0], x[-1])
     plt.plot(fx, f1(fx), linewidth = 1)
     plt.legend(["d = %i" % f1.order], loc = 'upper left')
@@ -67,6 +67,6 @@ def SpeBlueBallFit(blue_ball_no):
     plt.show()
 
 if __name__ == '__main__':
-    #WhichBlueBallIsTheBestInHistory()
+    WhichBlueBallIsTheBestInHistory()
     SpeBlueBallFit(12)
     
