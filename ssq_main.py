@@ -12,4 +12,4 @@ ssq_bbrc.RuleDataUpdate(ssq_bbrc.SsqBbrOccurInternal())
 ssq_bbrc.RuleDataUpdate(ssq_bbrc.SsqBbrFollowThere())
 
 ssq_pdnt.WhichBlueBallIsTheBestInHistory()
-ssq_pdnt.SpeBlueBallFit(12)
+ssq_pdnt.SpeCurBlueBallFit()

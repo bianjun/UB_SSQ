@@ -64,6 +64,7 @@ class SsqDbController:
             ssqList = []
             iend = 10
             the_page = gsd.GetSsqHistoryDataFromLecaiCom(begindate, updateEndDate)
+            ssqdata = None
             
             for ssqdata in gsd.ParseSsqHistoryDataFromLecaiCom(the_page):
                 ssqList.insert(0, copy.deepcopy(ssqdata))
@@ -71,6 +72,7 @@ class SsqDbController:
                 print('抓取成功，抓到%d组数据！'%len(ssqList))
             else:
                 print('抓取失败！')
+                return
 
             if self.isupdate:
                 print('获取到的新数据如下：')
